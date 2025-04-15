@@ -1,8 +1,9 @@
-export type TAgency = {
-  companyName: string;
+export type TTenant = {
+  fullName: string;
+  emiratesId: string;
   email: string;
   phone: string;
-  uerType: "Agency" | "Landlord" | "Tenant";
+  uerType?: "Landlord" | "Agency" | "Tenant";
   userId: string;
 };
 

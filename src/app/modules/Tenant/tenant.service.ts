@@ -1,10 +1,10 @@
 import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiErrors";
-import { TAgency } from "./landloard.interface";
 import httpStatus from "http-status";
+import { TTenant } from "./tenant.interface";
 
 // Create a new user in the database.
-const createLandloardIntoDb = async (payload: TLandloard, userId: string) => {
+const createTenantIntoDb = async (payload: TTenant, userId: string) => {
   const isUserExits = await prisma.user.findFirst({
     where: {
       id: userId,
@@ -23,9 +23,9 @@ const createLandloardIntoDb = async (payload: TLandloard, userId: string) => {
   }
 
   const result = await prisma.$transaction(async (prisma) => {
-    // create Landloard
-    const createAgecy = await prisma.Landloard.create({
-      data: { ...payload, uerType: "Landloard", userId },
+    // create Tenant
+    const createAgecy = await prisma.tenant.create({
+      data: { ...payload, uerType: "Tenant", userId },
     });
 
     // update user
@@ -33,7 +33,7 @@ const createLandloardIntoDb = async (payload: TLandloard, userId: string) => {
       where: { id: userId },
       data: {
         isProfileSetUp: true,
-        uerType: "Landloard",
+        uerType: "Tenant",
       },
     });
 
@@ -43,9 +43,9 @@ const createLandloardIntoDb = async (payload: TLandloard, userId: string) => {
   return result;
 };
 
-// reterive all Landloards from the database also searcing anf filetering
-const getLandloardsFromDb = async () => {
-  const result = await prisma.Landloard.findMany({
+// reterive all Tenants from the database also searcing anf filetering
+const getTenantsFromDb = async () => {
+  const result = await prisma.tenant.findMany({
     include: {
       user: {
         select: {
@@ -61,7 +61,7 @@ const getLandloardsFromDb = async () => {
   return result;
 };
 
-export const LandloardService = {
-  createLandloardIntoDb,
-  getLandloardsFromDb,
+export const TenantService = {
+  createTenantIntoDb,
+  getTenantsFromDb,
 };
