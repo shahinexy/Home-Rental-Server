@@ -6,7 +6,6 @@ import httpStatus from "http-status";
 import { string } from "zod";
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
-
   const result = await AuthServices.loginUser(req.body);
   res.cookie("token", result.token, { httpOnly: true });
   sendResponse(res, {
@@ -16,6 +15,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
 const logoutUser = catchAsync(async (req: Request, res: Response) => {
   // Clear the token cookie
   res.clearCookie("token", {
@@ -63,57 +63,50 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 // forgot password
 const forgotPassword = catchAsync(async (req: Request, res: Response) => {
-
-  const result= await AuthServices.forgotPassword(req.body);
+  const result = await AuthServices.forgotPassword(req.body);
 
   sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Check your email!",
-      data: result
-  })
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Check your email!",
+    data: result,
+  });
 });
 const resendOtp = catchAsync(async (req: Request, res: Response) => {
-
-  const result= await AuthServices.resendOtp(req.body.email);
+  const result = await AuthServices.resendOtp(req.body.email);
 
   sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Check your email!",
+    data: result,
+  });
+});
+const verifyForgotPasswordOtp = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await AuthServices.verifyForgotPasswordOtp(req.body);
+
+    sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Check your email!",
-      data: result
-  })
-});
-const verifyForgotPasswordOtp = catchAsync(async (req: Request, res: Response) => {
-
-  const result= await AuthServices.verifyForgotPasswordOtp(req.body);
-
-  sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Check your email!",
-      data: result
-  })
-});
+      data: result,
+    });
+  }
+);
 
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
-
-
-
-  await AuthServices.resetPassword( req.body);
+  await AuthServices.resetPassword(req.body);
 
   sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Password Reset!",
-      data: null
-  })
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password Reset!",
+    data: null,
+  });
 });
-
-
 
 export const AuthController = {
   loginUser,
@@ -123,5 +116,5 @@ export const AuthController = {
   forgotPassword,
   resetPassword,
   resendOtp,
-  verifyForgotPasswordOtp
+  verifyForgotPasswordOtp,
 };

@@ -25,7 +25,8 @@ const auth = (...roles: string[]) => {
         token,
         config.jwt.jwt_secret as Secret
       );
-      const { id, role, iat } = verifiedUser;
+
+      const { id } = verifiedUser;
 
       const user = await prisma.user.findUnique({
         where: {
@@ -36,13 +37,9 @@ const auth = (...roles: string[]) => {
         throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
       }
 
-      if (user.status === "BLOCKED") {
-        throw new ApiError(httpStatus.FORBIDDEN, "Your account is blocked!");
-      }
-
       req.user = verifiedUser as JwtPayload;
 
-      if (roles.length && !roles.includes(verifiedUser.role)) {
+      if (roles.length && !roles.includes(verifiedUser.userType)) {
         throw new ApiError(httpStatus.FORBIDDEN, "Forbidden!");
       }
       next();

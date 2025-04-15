@@ -3,7 +3,6 @@ import validateRequest from "../../middlewares/validateRequest";
 import { AuthController } from "./auth.controller";
 import { UserValidation } from "../User/user.validation";
 import auth from "../../middlewares/auth";
-import { UserRole } from "@prisma/client";
 import { authValidation } from "./auth.validation";
 
 const router = express.Router();
@@ -18,11 +17,7 @@ router.post(
 // user logout route
 router.post("/logout", AuthController.logoutUser);
 
-router.get(
-  "/profile",
-  auth(UserRole.ADMIN, UserRole.USER),
-  AuthController.getMyProfile
-);
+router.get("/profile", AuthController.getMyProfile);
 
 router.put(
   "/change-password",
@@ -31,23 +26,9 @@ router.put(
   AuthController.changePassword
 );
 
-
-router.post(
-  '/forgot-password',
-  AuthController.forgotPassword
-);
-router.post(
-  '/resend-otp',
-  AuthController.resendOtp
-);
-router.post(
-  '/verify-otp',
-  AuthController.verifyForgotPasswordOtp
-);
-
-router.post(
-  '/reset-password',
-  AuthController.resetPassword
-)
+router.post("/forgot-password", AuthController.forgotPassword);
+router.post("/resend-otp", AuthController.resendOtp);
+router.post("/verify-otp", AuthController.verifyForgotPasswordOtp);
+router.post("/reset-password", AuthController.resetPassword);
 
 export const AuthRoutes = router;

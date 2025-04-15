@@ -1,8 +1,9 @@
-
-
-export type TUser = {
+export type TAgency = {
+  companyName: string;
   email: string;
-  password: string;
+  phone: string;
+  uerType: "Agency" | "Landlord" | "Tenant";
+  userId: string;
 };
 
 export type IUserFilterRequest = {
@@ -10,4 +11,4 @@ export type IUserFilterRequest = {
   email?: string | undefined;
   contactNumber?: string | undefined;
   searchTerm?: string | undefined;
-}
+};
