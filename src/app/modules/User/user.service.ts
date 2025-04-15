@@ -124,90 +124,32 @@ const getUsersFromDb = async (
 };
 
 // update profile by user won profile uisng token or email and id
-const updateProfile = async (req: Request) => {
-  console.log(req.file, req.body.data);
-  const file = req.file;
-  const stringData = req.body.data;
-  let image;
-  let parseData;
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      id: req.user.id,
-    },
-  });
-  if (!existingUser) {
-    throw new ApiError(404, "User not found");
-  }
-  if (file) {
-    image = (await fileUploader.uploadToDigitalOcean(file)).Location;
-  }
-  if (stringData) {
-    parseData = JSON.parse(stringData);
-  }
-  const result = await prisma.user.update({
-    where: {
-      id: existingUser.id, // Ensure `existingUser.id` is valid and exists
-    },
-    data: {
-      fullName: parseData.fullName || existingUser.fullName,
-      username: parseData.username || existingUser.username,
-      dob: parseData.dob || existingUser.dob,
-      email: parseData.email || existingUser.email,
-      profileImage: image || existingUser.profileImage,
-      updatedAt: new Date(), // Assuming your model has an `updatedAt` field
-    },
-    select: {
-      id: true,
-      fullName: true,
-      username: true,
-      email: true,
-      profileImage: true,
-      dob: true,
-    },
+const updateProfile = async (payload: User, imageFile: any, userId: string) => {
+  const result = await prisma.$transaction(async (prisma) => {
+    // upload image
+    let image = "";
+    if (imageFile) {
+      image = (await fileUploader.uploadToCloudinary(imageFile)).Location;
+    }
+
+    //create user profile
+    const createUserProfile = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...payload,
+        profileImage: image,
+      },
+    });
+
+    return createUserProfile;
   });
 
   return result;
 };
 
-// update user data into database by id fir admin
-const updateUserIntoDb = async (payload: IUser, id: string) => {
-  const userInfo = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: id,
-    },
-  });
-  if (!userInfo)
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found with id: " + id);
-
-  const result = await prisma.user.update({
-    where: {
-      id: userInfo.id,
-    },
-    data: payload,
-    select: {
-      id: true,
-      fullName: true,
-      username: true,
-      email: true,
-      profileImage: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-
-  if (!result)
-    throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      "Failed to update user profile"
-    );
-
-  return result;
-};
 
 export const userService = {
   createUserIntoDb,
   getUsersFromDb,
   updateProfile,
-  updateUserIntoDb,
 };

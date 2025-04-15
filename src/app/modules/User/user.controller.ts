@@ -1,7 +1,7 @@
   import httpStatus from "http-status";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
-import { userService } from "./user.services";
+import { userService } from "./user.service";
 import { Request, Response } from "express";
 import pick from "../../../shared/pick";
 import { userFilterableFields } from "./user.costant";
@@ -36,9 +36,9 @@ const getUsers = catchAsync(async (req: Request, res: Response) => {
 
 // get all user form db
 const updateProfile = catchAsync(async (req: Request & {user?:any}, res: Response) => {
-  const user = req?.user;
+  const {id} = req?.user;
 
-  const result = await userService.updateProfile(req);
+  const result = await userService.updateProfile(req.body, req.file, id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -48,21 +48,8 @@ const updateProfile = catchAsync(async (req: Request & {user?:any}, res: Respons
 });
 
 
-// *! update user role and account status
-const updateUser = catchAsync(async (req: Request, res: Response) => {
-const id = req.params.id;
-  const result = await userService.updateUserIntoDb( req.body,id);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "User updated successfully!",
-    data: result,
-  });
-});
-
 export const userController = {
   createUser,
   getUsers,
   updateProfile,
-  updateUser
 };

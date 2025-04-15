@@ -10,7 +10,6 @@ const CreateUserValidationSchema = z.object({
     .nonempty("Password is required"),
 });
 
-export { CreateUserValidationSchema };
 const UserLoginValidationSchema = z.object({
   email: z.string().email().nonempty("Email is required"),
   password: z

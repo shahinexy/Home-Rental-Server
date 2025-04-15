@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import validateRequest from "../../middlewares/validateRequest";
 import { UserValidation } from "./user.validation";
 import { userController } from "./user.controller";
@@ -20,14 +20,14 @@ router.get("/", userController.getUsers);
 // *!profile user
 router.put(
   "/profile",
-  // validateRequest(UserValidation.userUpdateSchema),
-
   auth(UserRole.ADMIN, UserRole.USER),
   fileUploader.uploadSingle,
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },
+  validateRequest(UserValidation.userUpdateSchema),
   userController.updateProfile
 );
-
-// *!update  user
-router.put("/:id", userController.updateUser);
 
 export const userRoutes = router;
