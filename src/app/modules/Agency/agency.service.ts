@@ -25,7 +25,7 @@ const createAgencyIntoDb = async (payload: TAgency, userId: string) => {
   const result = await prisma.$transaction(async (prisma) => {
     // create agency
     const createAgecy = await prisma.agency.create({
-      data: { ...payload, uerType: "Agency", userId },
+      data: { ...payload, userType: "Agency", userId },
     });
 
     // update user
@@ -33,7 +33,7 @@ const createAgencyIntoDb = async (payload: TAgency, userId: string) => {
       where: { id: userId },
       data: {
         isProfileSetUp: true,
-        uerType: "Agency",
+        userType: "Agency",
       },
     });
 

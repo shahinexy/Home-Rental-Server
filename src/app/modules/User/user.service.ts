@@ -89,7 +89,7 @@ const getUsersFromDb = async (
       id: true,
       email: true,
       isProfileSetUp: true,
-      uerType: true,
+      userType: true,
       createdAt: true,
       updatedAt: true,
     },

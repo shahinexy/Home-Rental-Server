@@ -11,7 +11,7 @@ model User {
   id             String     @id @default(auto()) @map("_id") @db.ObjectId
   email          String     @unique
   password       String
-  uerType        UserType?  @default(User)
+  userType       UserType?  @default(User)
   isProfileSetUp Boolean    @default(false)
   expirationOtp  DateTime?
   otp            Int?
@@ -29,7 +29,7 @@ model Agency {
   companyName String
   email       String    @unique
   phone       String
-  uerType     UserType? @default(Agency)
+  userType    UserType? @default(Agency)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   userId      String    @db.ObjectId
@@ -39,16 +39,17 @@ model Agency {
 }
 
 model Landlord {
-  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                   String     @id @default(auto()) @map("_id") @db.ObjectId
   fullName             String
   emiratesIdOrPassport String
-  email                String    @unique
+  email                String     @unique
   phone                String
-  uerType              UserType? @default(Landlord)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  userId               String    @db.ObjectId
-  user                 User      @relation(fields: [userId], references: [id])
+  userType             UserType?  @default(Landlord)
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+  userId               String     @db.ObjectId
+  user                 User       @relation(fields: [userId], references: [id])
+  property             Property[]
 
   @@map("Landlord")
 }
@@ -59,13 +60,52 @@ model Tenant {
   emiratesId String
   email      String    @unique
   phone      String
-  uerType    UserType? @default(Tenant)
+  userType   UserType? @default(Tenant)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   userId     String    @db.ObjectId
   user       User      @relation(fields: [userId], references: [id])
 
   @@map("Tenant")
+}
+
+model Property {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  propertyName String
+  propertyType String
+  buildingName String
+  location     String
+  maknaiNumber String
+  propertyArea String
+  totalFloor   Int
+  totalRooms   Int
+  description  String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  landlordId   String     @db.ObjectId
+  landlord     Landlord   @relation(fields: [landlordId], references: [id])
+  contract     Contract[]
+
+  @@map("Property")
+}
+
+model Contract {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantName     String
+  emiratesID     String
+  email          String   @unique
+  mobile         String
+  startDate      DateTime
+  endDate        DateTime
+  deposit        Float
+  payment        String
+  numberPayments Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  propertyId     String   @db.ObjectId
+  property       Property @relation(fields: [propertyId], references: [id])
+
+  @@map("Contract")
 }
 
 enum UserType {

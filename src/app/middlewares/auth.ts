@@ -26,8 +26,9 @@ const auth = (...roles: string[]) => {
         config.jwt.jwt_secret as Secret
       );
 
-      const { id } = verifiedUser;
-
+      const { id, userType } = verifiedUser;
+      // ! need to fixed firs when login get usertype as user
+console.log(userType); 
       const user = await prisma.user.findUnique({
         where: {
           id: id,

@@ -25,7 +25,7 @@ const createLandlordIntoDb = async (payload: TLandlord, userId: string) => {
   const result = await prisma.$transaction(async (prisma) => {
     // create Landlord
     const createAgecy = await prisma.landlord.create({
-      data: { ...payload, uerType: "Landlord", userId },
+      data: { ...payload, userType: "Landlord", userId },
     });
 
     // update user
@@ -33,7 +33,7 @@ const createLandlordIntoDb = async (payload: TLandlord, userId: string) => {
       where: { id: userId },
       data: {
         isProfileSetUp: true,
-        uerType: "Landlord",
+        userType: "Landlord",
       },
     });
 

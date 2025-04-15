@@ -34,7 +34,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
     {
       id: userData.id,
       email: userData.email,
-      userType: userData.uerType,
+      userType: userData.userType,
     },
     config.jwt.jwt_secret as Secret,
     config.jwt.expires_in as string
