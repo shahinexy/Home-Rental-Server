@@ -70,21 +70,23 @@ model Tenant {
 }
 
 model Property {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  propertyName String
-  propertyType String
-  buildingName String
-  location     String
-  maknaiNumber String
-  propertyArea String
-  totalFloor   Int
-  totalRooms   Int
-  description  String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  landlordId   String     @db.ObjectId
-  landlord     Landlord   @relation(fields: [landlordId], references: [id])
-  contract     Contract[]
+  id                String     @id @default(auto()) @map("_id") @db.ObjectId
+  propertyName      String
+  propertyType      String
+  buildingName      String
+  location          String
+  maknaiNumber      String
+  propertyArea      String
+  totalFloor        Int
+  totalRooms        Int
+  description       String
+  contractExpiresAt DateTime?
+  isContractCreated Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  landlordId        String     @db.ObjectId
+  landlord          Landlord   @relation(fields: [landlordId], references: [id])
+  contract          Contract[]
 
   @@map("Property")
 }
@@ -100,6 +102,7 @@ model Contract {
   deposit        Float
   payment        String
   numberPayments Int
+  isDeleted      Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   propertyId     String   @db.ObjectId

@@ -21,7 +21,18 @@ const getPropertys = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get all Property form db
+const getMyProperty = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user;
+  const result = await PropertyService.getMyProperty(id);
+  sendResponse(res, {
+    message: "Propertys retrieved successfully!",
+    data: result,
+  });
+});
+
 export const PropertyController = {
   createProperty,
   getPropertys,
+  getMyProperty
 };

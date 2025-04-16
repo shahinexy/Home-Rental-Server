@@ -26,23 +26,24 @@ const auth = (...roles: string[]) => {
         config.jwt.jwt_secret as Secret
       );
 
-      const { id, userType } = verifiedUser;
-      // ! need to fixed firs when login get usertype as user
-console.log(userType); 
+      const { id } = verifiedUser;
+
       const user = await prisma.user.findUnique({
         where: {
           id: id,
         },
       });
+
       if (!user) {
-        throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+        throw new ApiError(httpStatus.NOT_FOUND, "Forbidden access");
       }
 
       req.user = verifiedUser as JwtPayload;
 
-      if (roles.length && !roles.includes(verifiedUser.userType)) {
+      if (roles.length && !roles.includes(user.userType!)) {
         throw new ApiError(httpStatus.FORBIDDEN, "Forbidden!");
       }
+
       next();
     } catch (err) {
       next(err);

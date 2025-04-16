@@ -14,8 +14,15 @@ const createPropertyIntoDb = async (payload: TProperty, userId: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
 
-  if (isUserExits.isProfileSetUp !== true) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Setup your profile");
+  const isLandloardExists = await prisma.landlord.findFirst({
+    where: { userId },
+  });
+
+  if (!isLandloardExists) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Setup your profile as landloard"
+    );
   }
 
   if (isUserExits.userType !== "Landlord") {
@@ -23,7 +30,7 @@ const createPropertyIntoDb = async (payload: TProperty, userId: string) => {
   }
 
   const result = await prisma.property.create({
-    data: payload,
+    data: { ...payload, landlordId: isLandloardExists.id },
   });
 
   return result;
@@ -32,6 +39,24 @@ const createPropertyIntoDb = async (payload: TProperty, userId: string) => {
 // reterive all Propertys from the database also searcing anf filetering
 const getPropertysFromDb = async () => {
   const result = await prisma.property.findMany();
+  return result;
+};
+
+const getMyProperty = async (userId: string) => {
+  const isLandloardExists = await prisma.landlord.findFirst({
+    where: { userId },
+  });
+
+  if (!isLandloardExists) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Setup your profile as landloard"
+    );
+  }
+
+  const result = await prisma.property.findMany({
+    where: { landlordId: isLandloardExists.id },
+  });
 
   return result;
 };
@@ -39,4 +64,5 @@ const getPropertysFromDb = async () => {
 export const PropertyService = {
   createPropertyIntoDb,
   getPropertysFromDb,
+  getMyProperty
 };
