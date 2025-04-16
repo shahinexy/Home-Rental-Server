@@ -5,6 +5,7 @@ import { AgencyRoutes } from "../modules/Agency/agency.routes";
 import { LandlordRoutes } from "../modules/Landlord/landlord.routes";
 import { TenantRoutes } from "../modules/Tenant/tenant.routes";
 import { PropertyRoutes } from "../modules/Property/property.routes";
+import { ContractRoutes } from "../modules/Contract/contract.routes";
 
 const router = express.Router();
 
@@ -30,8 +31,12 @@ const moduleRoutes = [
     route: TenantRoutes,
   },
   {
-    path: "/propertys",
+    path: "/properties",
     route: PropertyRoutes,
+  },
+  {
+    path: "/contract",
+    route: ContractRoutes,
   },
 ];
 

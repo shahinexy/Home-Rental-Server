@@ -1,7 +1,12 @@
 import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiErrors";
 import httpStatus from "http-status";
-import { TProperty } from "./property.interface";
+import { IPropertyFilterRequest, TProperty } from "./property.interface";
+import { IPaginationOptions } from "../../../interfaces/paginations";
+import { Prisma } from "@prisma/client";
+import { paginationHelper } from "../../../helpars/paginationHelper";
+import { propertySearchAbleFields } from "./property.costant";
+import { getDaysUntilExpiration } from "./property.utils";
 
 const createPropertyIntoDb = async (payload: TProperty, userId: string) => {
   const isUserExits = await prisma.user.findFirst({
@@ -36,13 +41,45 @@ const createPropertyIntoDb = async (payload: TProperty, userId: string) => {
   return result;
 };
 
-// reterive all Propertys from the database also searcing anf filetering
 const getPropertysFromDb = async () => {
-  const result = await prisma.property.findMany();
+  const result = await prisma.property.findMany({
+    orderBy: { createdAt: "desc" },
+  });
   return result;
 };
 
-const getMyProperty = async (userId: string) => {
+const getMyProperty = async (
+  userId: string,
+  params: IPropertyFilterRequest,
+  options: IPaginationOptions
+) => {
+  const { page, limit, skip } = paginationHelper.calculatePagination(options);
+  const { searchTerm, ...filterData } = params;
+
+  const andCondions: Prisma.PropertyWhereInput[] = [];
+
+  if (params.searchTerm) {
+    andCondions.push({
+      OR: propertySearchAbleFields.map((field) => ({
+        [field]: {
+          contains: params.searchTerm,
+          mode: "insensitive",
+        },
+      })),
+    });
+  }
+
+  if (Object.keys(filterData).length > 0) {
+    andCondions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
+  }
+  const whereConditons: Prisma.PropertyWhereInput = { AND: andCondions };
+
   const isLandloardExists = await prisma.landlord.findFirst({
     where: { userId },
   });
@@ -54,8 +91,25 @@ const getMyProperty = async (userId: string) => {
     );
   }
 
-  const result = await prisma.property.findMany({
-    where: { landlordId: isLandloardExists.id },
+  const properties = await prisma.property.findMany({
+    where: { ...whereConditons, landlordId: isLandloardExists.id },
+    skip,
+    include: {
+      landlord: true,
+    },
+  });
+
+  const enriched = properties.map((p) => ({
+    ...p,
+    daysLeft: p.contractExpiresAt
+      ? getDaysUntilExpiration(p.contractExpiresAt)
+      : null,
+  }));
+
+  const result = enriched.sort((a, b) => {
+    if (a.daysLeft === null) return 1;
+    if (b.daysLeft === null) return -1;
+    return a.daysLeft - b.daysLeft;
   });
 
   return result;
@@ -64,5 +118,5 @@ const getMyProperty = async (userId: string) => {
 export const PropertyService = {
   createPropertyIntoDb,
   getPropertysFromDb,
-  getMyProperty
+  getMyProperty,
 };

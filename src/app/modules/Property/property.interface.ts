@@ -11,5 +11,8 @@ export type TProperty = {
   landlordId: string;
 };
 
-
-
+export type IPropertyFilterRequest = {
+  searchTerm?: string | undefined;
+  contractExpiresAt?: string | undefined;
+  location?: string | undefined;
+};

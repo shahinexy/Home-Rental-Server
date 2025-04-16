@@ -2,6 +2,8 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { Request, Response } from "express";
 import { PropertyService } from "./property.service";
+import { propertyFilterableFields } from "./property.costant";
+import pick from "../../../shared/pick";
 
 const createProperty = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.user;
@@ -23,8 +25,11 @@ const getPropertys = catchAsync(async (req: Request, res: Response) => {
 
 // get all Property form db
 const getMyProperty = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, propertyFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
   const { id } = req.user;
-  const result = await PropertyService.getMyProperty(id);
+
+  const result = await PropertyService.getMyProperty(id, filters, options);
   sendResponse(res, {
     message: "Propertys retrieved successfully!",
     data: result,
@@ -34,5 +39,5 @@ const getMyProperty = catchAsync(async (req: Request, res: Response) => {
 export const PropertyController = {
   createProperty,
   getPropertys,
-  getMyProperty
+  getMyProperty,
 };

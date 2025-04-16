@@ -17,7 +17,7 @@ router
   );
 
 router.get(
-  "/my-propertys",
+  "/my-properties",
   auth(UserType.Landlord),
   PropertyController.getMyProperty
 );
