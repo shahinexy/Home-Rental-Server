@@ -24,7 +24,7 @@ const createTenantIntoDb = async (payload: TTenant, userId: string) => {
 
   const result = await prisma.$transaction(async (prisma) => {
     // create Tenant
-    const createAgecy = await prisma.tenant.create({
+    const createTenant = await prisma.tenant.create({
       data: { ...payload, userType: "Tenant", userId },
     });
 
@@ -37,7 +37,7 @@ const createTenantIntoDb = async (payload: TTenant, userId: string) => {
       },
     });
 
-    return createAgecy;
+    return createTenant;
   });
 
   return result;
