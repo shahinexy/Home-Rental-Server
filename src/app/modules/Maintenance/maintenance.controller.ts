@@ -32,7 +32,7 @@ const getSingleMaintenances = catchAsync(async (req, res) => {
 });
 
 const markComleted = catchAsync(async (req, res) => {
-  const result = await MaintenanceService.markComleted(req.params.id);
+  const result = await MaintenanceService.markComleted(req.params.id, req.user.id);
   sendResponse(res, {
     message: "Maintenances updated successfully!",
     data: result,

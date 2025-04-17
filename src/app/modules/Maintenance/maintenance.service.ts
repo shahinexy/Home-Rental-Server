@@ -65,13 +65,50 @@ const getSingleMaintenances = async (id: string) => {
   return result;
 };
 
-const markComleted = async (id: string) => {
+const markComleted = async (id: string, userId: string) => {
+  const maintenance = await prisma.maintenance.findFirst({
+    where: { id },
+  });
+
+  if (!maintenance) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Maintenance not found");
+  }
+
+  const property = await prisma.property.findFirst({
+    where: { id: maintenance.propertyId },
+  });
+
+  if (!property) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Property not found");
+  }
+
+  // Check if user is landlord
+  const landlord = await prisma.landlord.findFirst({
+    where: { userId },
+  });
+
+  // Check if user is agency
+  const agency = await prisma.agency.findFirst({
+    where: { userId },
+  });
+
+  // Validate ownership
+  const isOwner =
+    (landlord && property.landlordId === landlord.id) ||
+    (agency && property.agencyId === agency.id);
+
+  if (!isOwner) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized access. You are not the owner of this property maintenance");
+  }
+
   const result = await prisma.maintenance.update({
     where: { id },
     data: { isCompleted: true },
   });
+
   return result;
 };
+
 
 export const MaintenanceService = {
   createMaintenanceIntoDb,

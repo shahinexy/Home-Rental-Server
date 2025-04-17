@@ -25,6 +25,9 @@ router
 router
   .route("/:id")
   .get(MaintenanceController.getSingleMaintenances)
-  .patch(MaintenanceController.markComleted);
+  .patch(
+    auth(UserType.Agency, UserType.Landlord),
+    MaintenanceController.markComleted
+  );
 
 export const MaintenanceRoutes = router;
