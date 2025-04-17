@@ -8,26 +8,51 @@ import config from "../../../config";
 
 const createContractIntoDb = async (payload: TContract, userId: string) => {
   const isUserExits = await prisma.user.findFirst({
-    where: {
-      id: userId,
-    },
+    where: { id: userId },
   });
 
   if (!isUserExits) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
 
-  const isLandlordExists = await prisma.landlord.findFirst({
-    where: { userId },
-  });
+  // Get user profile based on user type (Landlord or Agency)
+  let profileId: string | undefined;
+  let isLandlord = false;
+  let isAgency = false;
 
-  if (!isLandlordExists) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "Setup your profile as landlord"
-    );
+  if (isUserExits.userType === "Landlord") {
+    const isLandloardExists = await prisma.landlord.findFirst({
+      where: { userId },
+    });
+
+    if (!isLandloardExists) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Setup your profile as landlord"
+      );
+    }
+
+    profileId = isLandloardExists.id;
+    isLandlord = true;
+  } else if (isUserExits.userType === "Agency") {
+    const isAgencyExists = await prisma.agency.findFirst({
+      where: { userId },
+    });
+
+    if (!isAgencyExists) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Setup your profile as agency"
+      );
+    }
+
+    profileId = isAgencyExists.id;
+    isAgency = true;
+  } else {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized access");
   }
 
+  // Fetch the property and ensure it's created by the correct profile
   const isPropertyExists = await prisma.property.findFirst({
     where: { id: payload.propertyId },
   });
@@ -36,10 +61,21 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Property not found");
   }
 
-  if (isPropertyExists.landlordId !== isLandlordExists.id) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorize access");
+  if (isLandlord && isPropertyExists.landlordId !== profileId) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Unauthorized access for Landlord"
+    );
   }
 
+  if (isAgency && isPropertyExists.agencyId !== profileId) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Unauthorized access for Agency"
+    );
+  }
+
+  // Check if a contract already exists for this property
   const isContractAlreadyExists = await prisma.contract.findFirst({
     where: { propertyId: payload.propertyId },
   });
@@ -48,6 +84,7 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
     throw new ApiError(httpStatus.CONFLICT, "Property contract already exists");
   }
 
+  // Create contract logic
   const hashedPassword: string = await bcrypt.hash(
     "12345678",
     Number(config.bcrypt_salt_rounds)
@@ -74,7 +111,7 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
     });
 
     if (!isTenantExists) {
-      // create User
+      // Create User
       const createUser = await prisma.user.create({
         data: userData,
       });
@@ -83,7 +120,7 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
         throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create User");
       }
 
-      // update user
+      // Update User
       const updateUser = await prisma.user.update({
         where: { id: createUser.id },
         data: {
@@ -96,7 +133,7 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
         throw new ApiError(httpStatus.BAD_REQUEST, "Failed to update User");
       }
 
-      // create tenant
+      // Create Tenant
       const createTenant = await prisma.tenant.create({
         data: { ...tenantData, userId: createUser.id },
       });
@@ -110,16 +147,16 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
       tenantId = isTenantExists.id;
     }
 
-    // create contract
+    // Create Contract
     const createContract = await prisma.contract.create({
       data: { ...payload, tenantId: tenantId },
     });
 
     if (!createContract) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Faild to create Contract");
+      throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create Contract");
     }
 
-    // update property
+    // Update Property with contract expiry
     const contractExpiresAt = new Date();
     contractExpiresAt.setDate(contractExpiresAt.getDate() + 100);
 

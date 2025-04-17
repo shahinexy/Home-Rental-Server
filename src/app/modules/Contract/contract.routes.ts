@@ -14,14 +14,14 @@ router
     ContractControllers.getContracts
   )
   .post(
-    auth(UserType.Landlord),
+    auth(UserType.Landlord, UserType.Agency),
     validateRequest(ContractValidation.CreateContractValidationSchema),
     ContractControllers.createContract
   );
 
 router.get(
   "/my-contract",
-  auth(UserType.Tenant),
+  auth(UserType.Tenant, UserType.Agency),
   ContractControllers.getMyContracts
 );
 

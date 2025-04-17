@@ -56,23 +56,24 @@ model Landlord {
 }
 
 model Tenant {
-  id         String     @id @default(auto()) @map("_id") @db.ObjectId
-  fullName   String
-  emiratesId String
-  email      String
-  phone      String
-  userType   UserType?  @default(Tenant)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  userId     String     @db.ObjectId
-  user       User       @relation(fields: [userId], references: [id])
-  contract   Contract[]
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  fullName    String
+  emiratesId  String
+  email       String
+  phone       String
+  userType    UserType?     @default(Tenant)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  userId      String        @db.ObjectId
+  user        User          @relation(fields: [userId], references: [id])
+  contract    Contract[]
+  maintenance Maintenance[]
 
   @@map("Tenant")
 }
 
 model Property {
-  id                String     @id @default(auto()) @map("_id") @db.ObjectId
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
   propertyName      String
   propertyType      String
   buildingName      String
@@ -83,14 +84,15 @@ model Property {
   totalRooms        Int
   description       String
   contractExpiresAt DateTime?
-  isContractCreated Boolean    @default(false)
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
-  landlordId        String?    @db.ObjectId
-  agencyId          String?    @db.ObjectId
-  landlord          Landlord?  @relation(fields: [landlordId], references: [id])
-  agency            Agency?    @relation(fields: [agencyId], references: [id])
+  isContractCreated Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  landlordId        String?       @db.ObjectId
+  agencyId          String?       @db.ObjectId
+  landlord          Landlord?     @relation(fields: [landlordId], references: [id])
+  agency            Agency?       @relation(fields: [agencyId], references: [id])
   contract          Contract[]
+  maintenance       Maintenance[]
 
   @@map("Property")
 }
@@ -118,10 +120,20 @@ model Contract {
 }
 
 model Maintenance {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  priority    PriorityLevel
+  date        DateTime
+  time        String
+  image       String
+  description String
+  isCompleted Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  tenantId    String        @db.ObjectId
+  propertyId  String        @db.ObjectId
+  tenant      Tenant        @relation(fields: [tenantId], references: [id])
+  property    Property      @relation(fields: [propertyId], references: [id])
 
   @@map("Maintenance")
 }
@@ -131,4 +143,10 @@ enum UserType {
   Agency
   Landlord
   Tenant
+}
+
+enum PriorityLevel {
+  Urgent
+  Medium
+  Low
 }
