@@ -19,26 +19,42 @@ const createPropertyIntoDb = async (payload: TProperty, userId: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
 
-  const isLandloardExists = await prisma.landlord.findFirst({
-    where: { userId },
-  });
-
-  if (!isLandloardExists) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "Setup your profile as landloard"
-    );
-  }
-
-  if (isUserExits.userType !== "Landlord") {
+  if (
+    isUserExits.userType !== "Landlord" &&
+    isUserExits.userType !== "Agency"
+  ) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized access");
   }
 
-  const result = await prisma.property.create({
-    data: { ...payload, landlordId: isLandloardExists.id },
-  });
+  if (isUserExits.userType === "Landlord") {
+    const landlord = await prisma.landlord.findFirst({
+      where: { userId },
+    });
 
-  return result;
+    if (!landlord) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Landlord profile not found");
+    }
+
+    const result = await prisma.property.create({
+      data: { ...payload, landlordId: landlord.id },
+    });
+
+    return result;
+  } else if (isUserExits.userType === "Agency") {
+    const agency = await prisma.agency.findFirst({
+      where: { userId },
+    });
+
+    if (!agency) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Agency profile not found");
+    }
+
+    const result = await prisma.property.create({
+      data: { ...payload, agencyId: agency.id },
+    });
+
+    return result;
+  }
 };
 
 const getPropertysFromDb = async () => {
@@ -80,19 +96,53 @@ const getMyProperty = async (
   }
   const whereConditons: Prisma.PropertyWhereInput = { AND: andCondions };
 
-  const isLandloardExists = await prisma.landlord.findFirst({
-    where: { userId },
+  const user = await prisma.user.findFirst({
+    where: { id: userId },
   });
 
-  if (!isLandloardExists) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "Setup your profile as landloard"
-    );
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  let profileId: string | undefined;
+
+  if (user.userType === "Landlord") {
+    const isLandlordExists = await prisma.landlord.findFirst({
+      where: { userId },
+    });
+
+    if (!isLandlordExists) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Setup your profile as landlord"
+      );
+    }
+
+    profileId = isLandlordExists.id;
+  } else if (user.userType === "Agency") {
+    const isAgencyExists = await prisma.agency.findFirst({
+      where: { userId },
+    });
+
+    if (!isAgencyExists) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Setup your profile as agency"
+      );
+    }
+
+    profileId = isAgencyExists.id;
+  } else {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized access");
   }
 
   const properties = await prisma.property.findMany({
-    where: { ...whereConditons, landlordId: isLandloardExists.id },
+    where: {
+      ...whereConditons,
+      ...(user.userType === "Landlord"
+        ? { landlordId: profileId }
+        : { agencyId: profileId }),
+    },
     skip,
     include: {
       landlord: true,
@@ -115,8 +165,17 @@ const getMyProperty = async (
   return result;
 };
 
+const getSingleProperty = async (id: string) => {
+  const result = await prisma.property.findFirst({
+    where: { id },
+  });
+
+  return result;
+};
+
 export const PropertyService = {
   createPropertyIntoDb,
   getPropertysFromDb,
   getMyProperty,
+  getSingleProperty,
 };

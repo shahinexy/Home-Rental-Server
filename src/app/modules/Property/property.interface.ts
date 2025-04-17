@@ -9,6 +9,7 @@ export type TProperty = {
   totalRooms: number;
   description: string;
   landlordId: string;
+  agencyId: string;
 };
 
 export type IPropertyFilterRequest = {

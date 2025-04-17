@@ -9,17 +9,26 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(PropertyController.getPropertys)
+  .get(
+    auth(UserType.Agency, UserType.Landlord, UserType.Tenant, UserType.User),
+    PropertyController.getPropertys
+  )
   .post(
-    auth(UserType.Landlord),
+    auth(UserType.Landlord, UserType.Agency),
     validateRequest(PropertyValidation.CreatePropertyValidationSchema),
     PropertyController.createProperty
   );
 
 router.get(
   "/my-properties",
-  auth(UserType.Landlord),
+  auth(UserType.Landlord, UserType.Agency),
   PropertyController.getMyProperty
+);
+
+router.get(
+  "/:id",
+  auth(UserType.Agency, UserType.Landlord, UserType.Tenant),
+  PropertyController.getSingleProperty
 );
 
 export const PropertyRoutes = router;

@@ -130,7 +130,7 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
         contractExpiresAt,
       },
     });
-    
+
     return createContract;
   });
 
@@ -164,22 +164,87 @@ const getMyContracts = async (userId: string) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Setup your profile as tenant");
   }
 
-  const isContractExists = await prisma.landlord.findFirst({
-    where: { userId },
+  const result = await prisma.contract.findMany({
+    where: { tenantId: isTenantExists.id },
+    include: { property: true },
   });
 
-  if (!isLandloardExists) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "Setup your profile as landloard"
-    );
+  return result;
+};
+
+const getSingleContract = async (id: string) => {
+  const result = await prisma.contract.findFirst({
+    where: { id },
+    include: { property: true },
+  });
+
+  return result;
+};
+
+const deleteContract = async (id: string, userId: string) => {
+  const isContractExists = await prisma.contract.findFirst({
+    where: { id },
+  });
+
+  if (!isContractExists) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Contract not found");
   }
 
-  const result = await prisma.property.findMany({
-    where: { landlordId: isLandloardExists.id },
-    include: {
-      landlord: true,
+  const isUserExits = await prisma.user.findFirst({
+    where: {
+      id: userId,
     },
+  });
+
+  if (!isUserExits) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  const getProperty = await prisma.property.findFirst({
+    where: { id: isContractExists.propertyId },
+  });
+
+  if (!getProperty) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Property not found");
+  }
+
+  if (isUserExits.userType === "Landlord") {
+    const isLandloardExists = await prisma.landlord.findFirst({
+      where: { userId },
+    });
+
+    if (!isLandloardExists) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Landlord not found");
+    }
+
+    if (getProperty.landlordId !== isLandloardExists.id) {
+      throw new ApiError(
+        httpStatus.UNAUTHORIZED,
+        "This is not you property contract"
+      );
+    }
+  } else if (isUserExits.userType === "Agency") {
+    const isAgencyExists = await prisma.agency.findFirst({
+      where: { userId },
+    });
+
+    if (!isAgencyExists) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Agency not found");
+    }
+
+    if (getProperty?.agencyId !== isAgencyExists?.id) {
+      throw new ApiError(
+        httpStatus.UNAUTHORIZED,
+        "This is not you property contract"
+      );
+    }
+  } else {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorize access");
+  }
+
+  const result = await prisma.contract.update({
+    where: { id },
+    data: { isDeleted: true },
   });
 
   return result;
@@ -188,4 +253,7 @@ const getMyContracts = async (userId: string) => {
 export const ContractServices = {
   createContractIntoDb,
   getContractsFromDb,
+  getMyContracts,
+  getSingleContract,
+  deleteContract,
 };
