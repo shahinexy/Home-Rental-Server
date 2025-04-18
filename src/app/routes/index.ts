@@ -7,6 +7,9 @@ import { TenantRoutes } from "../modules/Tenant/tenant.routes";
 import { PropertyRoutes } from "../modules/Property/property.routes";
 import { ContractRoutes } from "../modules/Contract/contract.routes";
 import { MaintenanceRoutes } from "../modules/Maintenance/maintenance.routes";
+import { ExpenseRoutes } from "../modules/Expense/expense.routes";
+import { FinanceRoutes } from "../modules/Finance/finance.routes";
+import { DocumentRoutes } from "../modules/Document/document.routes";
 
 const router = express.Router();
 
@@ -40,8 +43,20 @@ const moduleRoutes = [
     route: ContractRoutes,
   },
   {
+    path: "/expense",
+    route: ExpenseRoutes,
+  },
+  {
     path: "/maintenance",
     route: MaintenanceRoutes,
+  },
+  {
+    path: "/finance",
+    route: FinanceRoutes,
+  },
+  {
+    path: "/document",
+    route: DocumentRoutes,
   },
 ];
 

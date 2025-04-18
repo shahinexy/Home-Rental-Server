@@ -93,6 +93,8 @@ model Property {
   agency            Agency?       @relation(fields: [agencyId], references: [id])
   contract          Contract[]
   maintenance       Maintenance[]
+  expense           Expense[]
+  document          Document[]
 
   @@map("Property")
 }
@@ -136,6 +138,38 @@ model Maintenance {
   property    Property      @relation(fields: [propertyId], references: [id])
 
   @@map("Maintenance")
+}
+
+model Expense {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  expenseAmount   Float
+  expenseCategory String
+  date            DateTime
+  paymentMethod   String
+  image           String
+  description     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  propertyId      String   @db.ObjectId
+  property        Property @relation(fields: [propertyId], references: [id])
+
+  @@map("Expense")
+}
+
+model Document {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  floorPlan  String   @default("")
+  titleDeed  String   @default("")
+  emiratesID String   @default("")
+  passportID String   @default("")
+  passport   String   @default("")
+  visa       String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  propertyId String   @db.ObjectId
+  property   Property @relation(fields: [propertyId], references: [id])
+
+  @@map("Document")
 }
 
 enum UserType {

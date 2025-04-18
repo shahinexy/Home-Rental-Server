@@ -35,6 +35,8 @@ const createMaintenanceIntoDb = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Property not found");
   }
 
+  const date = new Date(payload.date).toISOString();
+
   const result = await prisma.$transaction(async (prisma) => {
     // upload image
     let image = "";
@@ -44,7 +46,7 @@ const createMaintenanceIntoDb = async (
 
     //create user profile
     const createMaintenance = await prisma.maintenance.create({
-      data: { ...payload, image, tenantId: tenant.id },
+      data: { ...payload, image, tenantId: tenant.id, date },
     });
 
     return createMaintenance;
@@ -98,7 +100,10 @@ const markComleted = async (id: string, userId: string) => {
     (agency && property.agencyId === agency.id);
 
   if (!isOwner) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized access. You are not the owner of this property maintenance");
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Unauthorized access. You are not the owner of this property maintenance"
+    );
   }
 
   const result = await prisma.maintenance.update({
@@ -108,7 +113,6 @@ const markComleted = async (id: string, userId: string) => {
 
   return result;
 };
-
 
 export const MaintenanceService = {
   createMaintenanceIntoDb,
