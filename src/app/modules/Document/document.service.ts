@@ -5,14 +5,13 @@ import ApiError from "../../../errors/ApiErrors";
 import httpStatus from "http-status";
 
 const createDocumentIntoDb = async (payload: TDocument, documents: any) => {
-
   const property = await prisma.property.findFirst({
     where: { id: payload.propertyId },
   });
 
   if (!property) {
     throw new ApiError(httpStatus.NOT_FOUND, "Property not found");
-  } 
+  }
 
   const uploadedData: Partial<TDocument> = {};
 
@@ -28,13 +27,8 @@ const createDocumentIntoDb = async (payload: TDocument, documents: any) => {
   for (const field of documnetFields) {
     const file = documents[field]?.[0];
     if (file) {
-      console.log(`Uploading ${field}:`, file.originalname);
       const uploaded = await fileUploader.uploadToCloudinary(file);
-      console.log(`Uploaded ${field} →`, uploaded?.Location);
       uploadedData[field as keyof TDocument] = uploaded?.Location || "";
-      // console.log(`\nField: ${field}`);
-      // console.log(`Original name: ${file.originalname}`);
-      // console.log(`Buffer first 10 bytes:`, file.buffer?.subarray(0, 10));
     }
   }
 
@@ -61,7 +55,9 @@ const createDocumentIntoDb = async (payload: TDocument, documents: any) => {
 };
 
 const getDocumentFromDb = async () => {
-  const result = await prisma.document.findMany();
+  const result = await prisma.document.findMany({
+    orderBy: { createdAt: "desc" },
+  });
   return result;
 };
 

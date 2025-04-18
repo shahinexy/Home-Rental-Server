@@ -95,6 +95,7 @@ model Property {
   maintenance       Maintenance[]
   expense           Expense[]
   document          Document[]
+  Payment           Payment[]
 
   @@map("Property")
 }
@@ -170,6 +171,27 @@ model Document {
   property   Property @relation(fields: [propertyId], references: [id])
 
   @@map("Document")
+}
+
+model Payment {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  paymentDetails PaymentDetail[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  propertyId     String          @db.ObjectId
+  property       Property        @relation(fields: [propertyId], references: [id])
+
+  @@map("Payment")
+}
+
+model PaymentDetail {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount    Float
+  dueDate   DateTime
+  status    String
+  paymentId String   @db.ObjectId
+  payment   Payment  @relation(fields: [paymentId], references: [id])
+  bookingId String
 }
 
 enum UserType {
