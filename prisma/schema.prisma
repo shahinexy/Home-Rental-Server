@@ -191,7 +191,6 @@ model PaymentDetail {
   status    String
   paymentId String   @db.ObjectId
   payment   Payment  @relation(fields: [paymentId], references: [id])
-  bookingId String
 }
 
 enum UserType {

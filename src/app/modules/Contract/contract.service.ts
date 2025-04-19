@@ -5,6 +5,7 @@ import { TContract } from "./contract.interface";
 import { UserType } from "@prisma/client";
 import bcrypt from "bcrypt";
 import config from "../../../config";
+import { generatePaymentDetails } from "./contract.utils";
 
 const createContractIntoDb = async (payload: TContract, userId: string) => {
   const isUserExits = await prisma.user.findFirst({
@@ -103,6 +104,10 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
     userType: UserType.Tenant,
   };
 
+  const startDate = new Date(payload.startDate).toISOString();
+  const endDate = new Date(payload.endDate).toISOString();
+  
+  // =========== Start transaction ==========
   const result = await prisma.$transaction(async (prisma) => {
     let tenantId;
 
@@ -149,12 +154,25 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
 
     // Create Contract
     const createContract = await prisma.contract.create({
-      data: { ...payload, tenantId: tenantId },
+      data: { ...payload, tenantId: tenantId, startDate, endDate },
     });
 
     if (!createContract) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create Contract");
     }
+
+    // create contract payment details
+    const paymentDetails = generatePaymentDetails({
+      paymentsPerYear: payload.numberPayments,
+      totalAmount: payload.deposit,
+      startDate: payload.startDate,
+    });
+    const createPaymentDetails = await prisma.payment.create({
+      data: {
+        paymentDetails: { create: paymentDetails },
+        propertyId: payload.propertyId,
+      },
+    });
 
     // Update Property with contract expiry
     const contractExpiresAt = new Date();

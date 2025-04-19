@@ -10,6 +10,7 @@ import { MaintenanceRoutes } from "../modules/Maintenance/maintenance.routes";
 import { ExpenseRoutes } from "../modules/Expense/expense.routes";
 import { FinanceRoutes } from "../modules/Finance/finance.routes";
 import { DocumentRoutes } from "../modules/Document/document.routes";
+import { PaymentRoutes } from "../modules/Payment/payment.routes";
 
 const router = express.Router();
 
@@ -57,6 +58,10 @@ const moduleRoutes = [
   {
     path: "/document",
     route: DocumentRoutes,
+  },
+  {
+    path: "/payment-details",
+    route: PaymentRoutes,
   },
 ];
 
