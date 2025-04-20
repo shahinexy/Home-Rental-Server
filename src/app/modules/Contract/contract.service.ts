@@ -241,6 +241,7 @@ const getSingleContract = async (id: string) => {
 const getPropertyContract = async (id: string) => {
   const result = await prisma.contract.findFirst({
     where: { propertyId: id, isDeleted: false },
+    include: { property: true },
   });
 
   return result;
@@ -312,7 +313,7 @@ const deleteContract = async (id: string, userId: string) => {
     data: { isDeleted: true },
   });
 
-  return result;
+  return { message: "Contract deleted successfully" };
 };
 
 export const ContractServices = {

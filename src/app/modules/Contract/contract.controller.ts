@@ -48,7 +48,7 @@ const getPropertyContract = catchAsync(async (req: Request, res: Response) => {
 const deleteContract = catchAsync(async (req: Request, res: Response) => {
   const result = await ContractServices.deleteContract(req.params.id, req.user.id);
   sendResponse(res, {
-    message: "Contracts retrieved successfully!",
+    message: "Contract deleted successfully",
     data: result,
   });
 });

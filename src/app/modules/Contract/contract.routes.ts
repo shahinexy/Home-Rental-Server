@@ -28,7 +28,7 @@ router.get(
 router
   .route("/:id")
   .get(
-    auth(UserType.Agency, UserType.Landlord, UserType.Tenant, UserType.User),
+    auth(UserType.Agency, UserType.Landlord, UserType.Tenant),
     ContractControllers.getSingleContract
   )
   .delete(
