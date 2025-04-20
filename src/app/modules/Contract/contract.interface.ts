@@ -6,6 +6,7 @@ export type TContract = {
   startDate: Date;
   endDate: Date;
   deposit: number;
+  totalRent: number;
   payment: string;
   numberPayments: number;
   isDeleted: boolean;

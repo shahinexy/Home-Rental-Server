@@ -168,6 +168,7 @@ const getMyProperty = async (
 const getSingleProperty = async (id: string) => {
   const result = await prisma.property.findFirst({
     where: { id },
+    include: { payment: true },
   });
 
   return result;

@@ -15,7 +15,6 @@ export const generatePaymentDetails = ({
     (_, i) => ({
       amount: amountPerPayment,
       dueDate: addMonths(startDate, i),
-      status: "DUE",
     })
   );
 

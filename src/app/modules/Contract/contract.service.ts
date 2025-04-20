@@ -78,7 +78,7 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
 
   // Check if a contract already exists for this property
   const isContractAlreadyExists = await prisma.contract.findFirst({
-    where: { propertyId: payload.propertyId },
+    where: { propertyId: payload.propertyId, isDeleted: false },
   });
 
   if (isContractAlreadyExists) {
@@ -106,7 +106,7 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
 
   const startDate = new Date(payload.startDate).toISOString();
   const endDate = new Date(payload.endDate).toISOString();
-  
+
   // =========== Start transaction ==========
   const result = await prisma.$transaction(async (prisma) => {
     let tenantId;
@@ -164,9 +164,10 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
     // create contract payment details
     const paymentDetails = generatePaymentDetails({
       paymentsPerYear: payload.numberPayments,
-      totalAmount: payload.deposit,
+      totalAmount: payload.totalRent,
       startDate: payload.startDate,
     });
+
     const createPaymentDetails = await prisma.payment.create({
       data: {
         paymentDetails: { create: paymentDetails },
@@ -194,6 +195,7 @@ const createContractIntoDb = async (payload: TContract, userId: string) => {
 
 const getContractsFromDb = async () => {
   const result = await prisma.contract.findMany({
+    where: { isDeleted: false },
     include: { property: true },
   });
 
@@ -220,7 +222,7 @@ const getMyContracts = async (userId: string) => {
   }
 
   const result = await prisma.contract.findMany({
-    where: { tenantId: isTenantExists.id },
+    where: { tenantId: isTenantExists.id, isDeleted: false },
     include: { property: true },
   });
 
@@ -229,8 +231,16 @@ const getMyContracts = async (userId: string) => {
 
 const getSingleContract = async (id: string) => {
   const result = await prisma.contract.findFirst({
-    where: { id },
+    where: { id, isDeleted: false },
     include: { property: true },
+  });
+
+  return result;
+};
+
+const getPropertyContract = async (id: string) => {
+  const result = await prisma.contract.findFirst({
+    where: { propertyId: id, isDeleted: false },
   });
 
   return result;
@@ -310,5 +320,6 @@ export const ContractServices = {
   getContractsFromDb,
   getMyContracts,
   getSingleContract,
+  getPropertyContract,
   deleteContract,
 };

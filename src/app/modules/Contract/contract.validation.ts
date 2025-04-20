@@ -8,10 +8,11 @@ const CreateContractValidationSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   deposit: z.number(),
+  totalRent: z.number(),
   payment: z.string(),
   numberPayments: z.number().int(),
   isDeleted: z.boolean().default(false),
-  propertyId: z.string()
+  propertyId: z.string(),
 });
 
 export const ContractValidation = {

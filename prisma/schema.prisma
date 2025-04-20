@@ -95,7 +95,7 @@ model Property {
   maintenance       Maintenance[]
   expense           Expense[]
   document          Document[]
-  Payment           Payment[]
+  payment           Payment[]
 
   @@map("Property")
 }
@@ -108,6 +108,7 @@ model Contract {
   mobile         String
   startDate      DateTime
   endDate        DateTime
+  totalRent      Float
   deposit        Float
   payment        String
   numberPayments Int
@@ -185,12 +186,12 @@ model Payment {
 }
 
 model PaymentDetail {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
   amount    Float
   dueDate   DateTime
-  status    String
-  paymentId String   @db.ObjectId
-  payment   Payment  @relation(fields: [paymentId], references: [id])
+  status    PaymentStatus @default(Due)
+  paymentId String        @db.ObjectId
+  payment   Payment       @relation(fields: [paymentId], references: [id])
 }
 
 enum UserType {
@@ -204,4 +205,9 @@ enum PriorityLevel {
   Urgent
   Medium
   Low
+}
+
+enum PaymentStatus {
+  Due
+  Paid
 }

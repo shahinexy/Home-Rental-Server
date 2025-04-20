@@ -36,4 +36,10 @@ router
     ContractControllers.deleteContract
   );
 
+router.get(
+  "/property/:propertyId",
+  auth(UserType.Agency, UserType.Landlord, UserType.Tenant),
+  ContractControllers.getPropertyContract
+);
+
 export const ContractRoutes = router;

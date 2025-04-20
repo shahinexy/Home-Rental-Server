@@ -3,7 +3,7 @@ import sendResponse from "../../../shared/sendResponse";
 import { Request, Response } from "express";
 import { PaymentService } from "./payment.service";
 
-// get all Payment form db
+
 const getPropertyPayments = catchAsync(async (req: Request, res: Response) => {
   const { propertyId } = req.params;
   const result = await PaymentService.getPropertyPayments(propertyId);
@@ -13,6 +13,16 @@ const getPropertyPayments = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updatePaymentStatus = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await PaymentService.updatePaymentStatus(id);
+  sendResponse(res, {
+    message: "Payments status updated successfully!",
+    data: result,
+  });
+});
+
 export const PaymentController = {
   getPropertyPayments,
+  updatePaymentStatus
 };

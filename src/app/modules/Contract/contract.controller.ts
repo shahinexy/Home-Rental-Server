@@ -37,6 +37,14 @@ const getSingleContract = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getPropertyContract = catchAsync(async (req: Request, res: Response) => {
+  const result = await ContractServices.getPropertyContract(req.params.propertyId);
+  sendResponse(res, {
+    message: "Contracts retrieved successfully!",
+    data: result,
+  });
+});
+
 const deleteContract = catchAsync(async (req: Request, res: Response) => {
   const result = await ContractServices.deleteContract(req.params.id, req.user.id);
   sendResponse(res, {
@@ -50,5 +58,6 @@ export const ContractControllers = {
   getContracts,
   getMyContracts,
   getSingleContract,
+  getPropertyContract,
   deleteContract,
 };
