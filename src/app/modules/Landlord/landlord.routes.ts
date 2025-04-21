@@ -9,12 +9,17 @@ const router = express.Router();
 
 router
   .route("/")
+  .get(LandlordController.getLandlords)
   .post(
-    auth(UserType.User),
+    auth(UserType.User, UserType.Agency),
     validateRequest(LandlordValidation.CreateLandlordValidationSchema),
     LandlordController.createLandlord
   );
 
-router.get("/", LandlordController.getLandlords);
+router.get(
+  "/agency",
+  auth(UserType.Agency),
+  LandlordController.getAgencyLandlord
+);
 
 export const LandlordRoutes = router;

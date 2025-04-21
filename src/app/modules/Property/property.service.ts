@@ -50,7 +50,7 @@ const createPropertyIntoDb = async (payload: TProperty, userId: string) => {
     }
 
     const result = await prisma.property.create({
-      data: { ...payload, agencyId: agency.id },
+      data: { ...payload, agencyId: agency.id, landlordId: payload.landlordId },
     });
 
     return result;
@@ -94,6 +94,7 @@ const getMyProperty = async (
       })),
     });
   }
+
   const whereConditons: Prisma.PropertyWhereInput = { AND: andCondions };
 
   const user = await prisma.user.findFirst({
@@ -165,6 +166,30 @@ const getMyProperty = async (
   return result;
 };
 
+const getPropertyByAgency = async (landlordId: string) => {
+  const properties = await prisma.property.findMany({
+    where: { landlordId: landlordId },
+    include: {
+      landlord: true,
+    },
+  });
+
+  const enriched = properties.map((p) => ({
+    ...p,
+    daysLeft: p.contractExpiresAt
+      ? getDaysUntilExpiration(p.contractExpiresAt)
+      : null,
+  }));
+
+  const result = enriched.sort((a, b) => {
+    if (a.daysLeft === null) return 1;
+    if (b.daysLeft === null) return -1;
+    return a.daysLeft - b.daysLeft;
+  });
+
+  return result;
+};
+
 const getSingleProperty = async (id: string) => {
   const result = await prisma.property.findFirst({
     where: { id },
@@ -178,5 +203,6 @@ export const PropertyService = {
   createPropertyIntoDb,
   getPropertysFromDb,
   getMyProperty,
+  getPropertyByAgency,
   getSingleProperty,
 };

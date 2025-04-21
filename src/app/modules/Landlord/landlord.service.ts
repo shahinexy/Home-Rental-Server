@@ -2,34 +2,82 @@ import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiErrors";
 import httpStatus from "http-status";
 import { TLandlord } from "./landlord.interface";
+import bcrypt from "bcrypt";
+import config from "../../../config";
 
-// Create a new user in the database.
 const createLandlordIntoDb = async (payload: TLandlord, userId: string) => {
   const isUserExits = await prisma.user.findFirst({
     where: {
       id: userId,
     },
+    include: { agency: true },
   });
+
+  console.log(isUserExits);
 
   if (!isUserExits) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
 
-  if (isUserExits.isProfileSetUp === true) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "Profile setup already completed"
-    );
-  }
+  const hashedPassword: string = await bcrypt.hash(
+    "12345678",
+    Number(config.bcrypt_salt_rounds)
+  );
 
+  // ========== start transaction =========
   const result = await prisma.$transaction(async (prisma) => {
+    if (isUserExits.userType === "Agency") {
+      const existingEmail = await prisma.user.findUnique({
+        where: { email: payload.email },
+      });
+      if (existingEmail) {
+        throw new ApiError(httpStatus.CONFLICT, "Email already exists");
+      }
+
+      const createUser = await prisma.user.create({
+        data: { email: payload.email, password: hashedPassword },
+      });
+
+      if (!createUser) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create user");
+      }
+
+      // create Landlord
+      const createLandlord = await prisma.landlord.create({
+        data: {
+          ...payload,
+          userType: "Landlord",
+          agencyId: isUserExits.agency[0].id,
+          userId: createUser.id,
+        },
+      });
+
+      // update user
+      await prisma.user.update({
+        where: { id: createUser.id },
+        data: {
+          isProfileSetUp: true,
+          userType: "Landlord",
+        },
+      });
+
+      return createLandlord;
+    }
+
+    if (isUserExits.isProfileSetUp === true) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Profile setup already completed"
+      );
+    }
+
     // create Landlord
-    const createAgecy = await prisma.landlord.create({
+    const createLandlord = await prisma.landlord.create({
       data: { ...payload, userType: "Landlord", userId },
     });
 
     // update user
-    const updateUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: userId },
       data: {
         isProfileSetUp: true,
@@ -37,13 +85,12 @@ const createLandlordIntoDb = async (payload: TLandlord, userId: string) => {
       },
     });
 
-    return createAgecy;
+    return createLandlord;
   });
 
   return result;
 };
 
-// reterive all Landlords from the database also searcing anf filetering
 const getLandlordsFromDb = async () => {
   const result = await prisma.landlord.findMany({
     include: {
@@ -61,7 +108,27 @@ const getLandlordsFromDb = async () => {
   return result;
 };
 
+const getAgencyLandlord = async (userId: string) => {
+  const isUserExits = await prisma.user.findFirst({
+    where: {
+      id: userId,
+    },
+    include: { agency: true },
+  });
+
+  if (!isUserExits) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  const result = await prisma.landlord.findMany({
+    where: { agencyId: isUserExits.agency[0].id },
+  });
+
+  return result;
+};
+
 export const LandlordService = {
   createLandlordIntoDb,
   getLandlordsFromDb,
+  getAgencyLandlord
 };

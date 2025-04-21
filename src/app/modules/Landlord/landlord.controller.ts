@@ -4,7 +4,7 @@ import sendResponse from "../../../shared/sendResponse";
 import { Request, Response } from "express";
 import { LandlordService } from "./landlord.service";
 
-const createLandlord = catchAsync(async (req: Request, res: Response) => {
+const createLandlord = catchAsync(async (req, res) => {
   const { id } = req.user;
   const result = await LandlordService.createLandlordIntoDb(req.body, id);
   sendResponse(res, {
@@ -13,9 +13,16 @@ const createLandlord = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// get all Landlord form db
-const getLandlords = catchAsync(async (req: Request, res: Response) => {
+const getLandlords = catchAsync(async (req, res) => {
   const result = await LandlordService.getLandlordsFromDb();
+  sendResponse(res, {
+    message: "Landlords retrieved successfully!",
+    data: result,
+  });
+});
+
+const getAgencyLandlord = catchAsync(async (req, res) => {
+  const result = await LandlordService.getAgencyLandlord(req.user.id);
   sendResponse(res, {
     message: "Landlords retrieved successfully!",
     data: result,
@@ -25,4 +32,5 @@ const getLandlords = catchAsync(async (req: Request, res: Response) => {
 export const LandlordController = {
   createLandlord,
   getLandlords,
+  getAgencyLandlord,
 };

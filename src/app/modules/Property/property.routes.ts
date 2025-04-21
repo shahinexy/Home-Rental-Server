@@ -26,6 +26,12 @@ router.get(
 );
 
 router.get(
+  "/by-agency/:landlordId",
+  auth(UserType.Agency),
+  PropertyController.getPropertyByAgency
+);
+
+router.get(
   "/:id",
   auth(UserType.Agency, UserType.Landlord, UserType.Tenant),
   PropertyController.getSingleProperty
