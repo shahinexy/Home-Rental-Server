@@ -196,6 +196,10 @@ const getSingleProperty = async (id: string) => {
     include: { payment: true },
   });
 
+  if(!result){
+    throw new ApiError(httpStatus.NOT_FOUND, "Property is not exists")
+  }
+
   return result;
 };
 

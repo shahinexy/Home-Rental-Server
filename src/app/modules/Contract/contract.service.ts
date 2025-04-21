@@ -235,6 +235,10 @@ const getSingleContract = async (id: string) => {
     include: { property: true },
   });
 
+  if(!result){
+    throw new ApiError(httpStatus.NOT_FOUND, "Property contract is not exists")
+  }
+
   return result;
 };
 
@@ -243,6 +247,10 @@ const getPropertyContract = async (id: string) => {
     where: { propertyId: id, isDeleted: false },
     include: { property: true },
   });
+
+  if(!result){
+    throw new ApiError(httpStatus.NOT_FOUND, "Property contract is not exists")
+  }
 
   return result;
 };
