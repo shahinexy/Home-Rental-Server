@@ -61,6 +61,9 @@ const getMyProfile = async (userToken: string) => {
       userType: true,
       createdAt: true,
       updatedAt: true,
+      agency: true,
+      landlord: true,
+      tenant: true,
     },
   });
 
