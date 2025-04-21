@@ -5,8 +5,8 @@ import { FinanceService } from "./finance.service";
 
 
 // get all Finance form db
-const getFinance = catchAsync(async (req: Request, res: Response) => {
-  const result = await FinanceService.getFinance();
+const getFinance = catchAsync(async (req, res) => {
+  const result = await FinanceService.getFinance(req.params.id);
   sendResponse(res, {
     message: "Finances retrieved successfully!",
     data: result,
