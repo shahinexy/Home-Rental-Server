@@ -11,7 +11,7 @@ router.get(
   PaymentController.getPropertyPayments
 );
 
-router.get(
+router.patch(
   "/detail/:id",
   auth(UserType.Agency, UserType.Landlord),
   PaymentController.updatePaymentStatus
