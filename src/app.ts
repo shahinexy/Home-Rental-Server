@@ -11,7 +11,7 @@ export const corsOptions = {
   origin: [
     "http://localhost:3001",
     "http://localhost:3000",
-    "https://rafik42-client.vercel.app/",
+    "https://rafik42-client.vercel.app",
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: [
