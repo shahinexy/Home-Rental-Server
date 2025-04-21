@@ -70,8 +70,6 @@ const getMyProfile = async (userToken: string) => {
   return userProfile;
 };
 
-// change password
-
 const changePassword = async (
   userToken: string,
   newPassword: string,
